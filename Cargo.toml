@@ -1,0 +1,75 @@
+[package]
+name = "cargo-multivers"
+version = "0.9.0"
+description = "Cargo subcommand to build multiple versions of the same binary, each with a different CPU features set, merged into a single portable optimized binary"
+edition.workspace = true
+readme = "README.md"
+license.workspace = true
+categories = [
+    "hardware-support",
+    "command-line-utilities",
+    "development-tools::cargo-plugins",
+]
+keywords = ["performance", "optimization", "cargo", "cpu", "multivers"]
+rust-version.workspace = true
+repository.workspace = true
+include = ["README.md", "CHANGELOG.md", "/src/*", "/LICENSE*"]
+
+[workspace.package]
+rust-version = "1.80"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ronnychevalier/cargo-multivers"
+
+[dependencies]
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3.8.1"
+
+[profile.release]
+lto = true
+strip = "symbols"
+
+[workspace]
+resolver = "2"
+members = ["multivers-runner"]
+exclude = [
+    "tests/test-argv",
+    "tests/test-nothing",
+    "tests/test-workspace",
+    "tests/test-nobin",
+]
+
+[workspace.lints.rust]
+missing_docs = "warn"
+trivial_numeric_casts = "warn"
+improper_ctypes = "warn"
+improper_ctypes_definitions = "warn"
+non_ascii_idents = "warn"
+rust_2018_idioms = "warn"
+rust_2024_compatibility = "warn"
+single_use_lifetimes = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+indexing_slicing = "warn"
+panic_in_result_fn = "warn"
+dbg_macro = "warn"
+panic = "warn"
+todo = "warn"
+unnecessary_safety_comment = "warn"
+unnecessary_safety_doc = "warn"
+unimplemented = "warn"
+use_debug = "warn"
+cargo = "warn"
+cast_lossless = "warn"
+trailing_empty_array = "warn"
+as_ptr_cast_mut = "warn"
+lint_groups_priority = "allow"
+
+[lints]
+workspace = true

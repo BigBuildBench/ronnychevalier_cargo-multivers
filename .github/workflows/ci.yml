@@ -1,0 +1,122 @@
+name: ci
+on:
+  pull_request:
+    paths:
+    - '**'
+    - '!/*.md'
+    - "!/LICENSE-*"
+  push:
+    branches:
+    - '**'
+    paths:
+    - '**'
+    - '!/*.md'
+    - "!/LICENSE-*"
+jobs:
+  typos:
+    name: Spell Check with Typos
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: typos
+      uses: crate-ci/typos@master
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        rust: ["nightly"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.rust }}
+        components: "rust-src"
+    - uses: Swatinem/rust-cache@v2
+    - name: Default features
+      run: cargo test --workspace
+  msrv:
+    name: "Check MSRV: 1.80.0"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@1.80.0
+    - uses: Swatinem/rust-cache@v2
+    - name: Default features
+      run: cargo check --all-targets
+  rustfmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt
+    - uses: Swatinem/rust-cache@v2
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@1.80.0
+      with:
+        components: clippy
+    - uses: Swatinem/rust-cache@v2
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features --all-targets -- -D warnings
+  clippy-runner:
+    name: clippy
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+        components: clippy
+    - uses: Swatinem/rust-cache@v2
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: -p multivers-runner --all-features --all-targets -- -D warnings
+  cargo-deny:
+    name: "cargo deny"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        rust-version: "1.80.0"
+  test-action:
+    name: Test cargo-multivers action
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+    - uses: ./
+      with:
+        manifest_path: tests/test-argv/Cargo.toml
+        version: main

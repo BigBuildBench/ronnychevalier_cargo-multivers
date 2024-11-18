@@ -1,0 +1,22 @@
+[package]
+name = "test-nothing"
+edition = "2021"
+publish = false
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.45.0", features = ["Win32_System_Threading"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+syscalls = { version = "0.6", default-features = false }
+
+[profile.release]
+strip = "symbols"
+panic = "abort"
+lto = true
+opt-level = "z"
+
+[profile.dev]
+panic = "abort"
+
+[package.metadata.multivers.x86_64]
+cpus = ["generic", "alderlake", "skylake", "sandybridge", "ivybridge"]
